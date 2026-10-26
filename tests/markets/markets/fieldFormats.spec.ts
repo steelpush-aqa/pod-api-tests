@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { BYTES32, ADDRESS, DECIMAL_UINT256 } from '../../src/constants/specPatterns';
+import { BYTES32, ADDRESS, DECIMAL_UINT256 } from '../../../src/constants/specPatterns';
 
 const formatRules = [
   { field: 'id', pattern: BYTES32 },
