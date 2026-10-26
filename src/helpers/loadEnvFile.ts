@@ -1,5 +1,5 @@
-import * as fs from "fs";
-import dotenv from "dotenv";
+import * as fs from 'fs';
+import dotenv from 'dotenv';
 
 export function loadEnvFile(envType: string): void {
   const envFilePath = `./env/.env.${envType}`;
@@ -12,7 +12,5 @@ export function loadEnvFile(envType: string): void {
 }
 
 export function throwMissingEnvTypeError(): never {
-  throw new Error(
-    "ENV_TYPE is not set. Example: ENV_TYPE=testnet npx playwright test",
-  );
+  throw new Error('ENV_TYPE is not set. Example: ENV_TYPE=testnet npx playwright test');
 }

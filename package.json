@@ -8,7 +8,9 @@
     "test:testnet-ui": "ENV_TYPE=testnet npx playwright test --ui",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
   },
   "keywords": [],
   "author": "",
@@ -20,7 +22,9 @@
     "@types/node": "^26.6.5",
     "dotenv": "^18.0.9",
     "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-playwright": "^2.12.1",
+    "prettier": "^3.9.10",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.0"
   }
