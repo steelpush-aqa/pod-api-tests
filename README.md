@@ -74,7 +74,7 @@ This project includes Claude Code as a pair-programming and learning tool.
 ## Roadmap
 
 - [x] Project setup, environments, linting, formatting, git hooks, reporting
-- [ ] Smoke tests for markets endpoints
+- [x] Smoke tests for markets endpoints
 - [ ] Account, explorer and bridge endpoints, including error responses
 - [ ] Schema validation of responses against the OpenAPI spec
 - [ ] Property-based testing of the same spec with Schemathesis

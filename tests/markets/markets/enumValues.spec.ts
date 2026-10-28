@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../../_fixtures/fixtures';
 import { MARKET_STATUS, MARKET_TYPE } from '../../../src/constants/specEnums';
 
 const enumValues = [
@@ -7,16 +7,10 @@ const enumValues = [
 ];
 
 for (const rule of enumValues) {
-  test(`List Markets: every market ${rule.field} is one of the spec's allowed values`, async ({
-    request,
+  test(`List Markets: every market ${rule.field} is one of the spec's allowed values`, ({
+    markets,
   }) => {
-    const response = await request.get('clob/markets');
-
-    expect(response.status()).toBe(200);
-
-    const body = (await response.json()) as Record<string, unknown>[];
-
-    for (const market of body) {
+    for (const market of markets) {
       expect(rule.allowed).toContain(market[rule.field]);
     }
   });

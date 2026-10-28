@@ -1,14 +1,18 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
+import { MarketsApi } from '../../../src/api/MarketsApi';
+import { HTTP } from '../../../src/constants/httpStatus';
+import { CONTENT_TYPE, CACHE_CONTROL } from '../../../src/constants/specHeaders';
 
 test('List Markets: request succeeds and returns a non-empty list', async ({ request }) => {
-  const response = await request.get('clob/markets');
+  const marketsApi = new MarketsApi(request);
+  const response = await marketsApi.getMarkets();
 
-  expect(response.status()).toBe(200);
-  expect(response.headers()['content-type']).toContain('application/json');
-  expect(response.headers()['cache-control']).toBe('public, max-age=60');
+  await marketsApi.assertStatus(response, HTTP.OK);
+  await marketsApi.assertContentType(response, CONTENT_TYPE.JSON);
+  await marketsApi.assertCacheControl(response, CACHE_CONTROL.MARKETS);
 
-  const body = (await response.json()) as unknown[];
+  const markets = await marketsApi.parseMarkets(response);
 
-  expect(Array.isArray(body)).toBe(true);
-  expect(body.length).toBeGreaterThan(0);
+  await marketsApi.assertIsArray(markets);
+  await marketsApi.assertMarketsNotEmpty(markets);
 });

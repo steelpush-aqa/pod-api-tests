@@ -26,7 +26,10 @@ export default defineConfig(
   {
     files: ['tests/**/*.ts'],
     rules: {
-      'playwright/expect-expect': ['error', { assertFunctionNames: ['assertSuccessResponseCode'] }],
+      'playwright/expect-expect': [
+        'error',
+        { assertFunctionNames: ['assertSuccessResponseCode'], assertFunctionPatterns: ['^assert'] },
+      ],
     },
   },
   eslintConfigPrettier,

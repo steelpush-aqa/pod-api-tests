@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../../_fixtures/fixtures';
 import { BYTES32, ADDRESS, DECIMAL_UINT256 } from '../../../src/constants/specPatterns';
 
 const formatRules = [
@@ -10,14 +10,8 @@ const formatRules = [
 ];
 
 for (const rule of formatRules) {
-  test(`List Markets: every market ${rule.field} matches the spec pattern`, async ({ request }) => {
-    const response = await request.get('clob/markets');
-
-    expect(response.status()).toBe(200);
-
-    const body = (await response.json()) as Record<string, unknown>[];
-
-    for (const market of body) {
+  test(`List Markets: every market ${rule.field} matches the spec pattern`, ({ markets }) => {
+    for (const market of markets) {
       expect(market[rule.field]).toMatch(rule.pattern);
     }
   });
