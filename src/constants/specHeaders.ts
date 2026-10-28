@@ -8,4 +8,5 @@ export const CONTENT_TYPE = {
 /** Cache-Control per endpoint, from each operation's description */
 export const CACHE_CONTROL = {
   MARKETS: 'public, max-age=60',
+  SOLUTION_TIME: 'no-store',
 } as const;

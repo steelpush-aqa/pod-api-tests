@@ -1,5 +1,6 @@
 import { expect, type APIResponse } from '@playwright/test';
 import { BaseApi } from './BaseApi';
+import { SOLUTION_TIME_MAX_LAG_MS, SOLUTION_TIME_MAX_AHEAD_MS } from '../constants/thresholds';
 
 export type Market = {
   id: string;
@@ -8,9 +9,17 @@ export type Market = {
   quote_token_symbol: string;
 };
 
+export type SolutionTime = {
+  solution_now: number;
+};
+
 export class MarketsApi extends BaseApi {
   async getMarkets(): Promise<APIResponse> {
     return this.step('GET clob/markets', () => this.request.get('clob/markets'));
+  }
+
+  async getSolutionTime(): Promise<APIResponse> {
+    return this.step('GET clob/status', () => this.request.get('clob/status'));
   }
 
   async parseMarkets(response: APIResponse): Promise<Record<string, unknown>[]> {
@@ -37,5 +46,31 @@ export class MarketsApi extends BaseApi {
       const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
       expect(duplicates).toEqual([]);
     });
+  }
+
+  async parseSolutionTime(response: APIResponse): Promise<SolutionTime> {
+    return this.step(
+      'Parse solution time',
+      async () => (await this.parseJson(response)) as SolutionTime,
+    );
+  }
+
+  async assertSolutionNowIsInteger(body: SolutionTime): Promise<void> {
+    await this.assertIsInteger(body.solution_now, 'solution_now');
+  }
+
+  async assertSolutionTimeIsRecent(solutionNow: number): Promise<void> {
+    await this.step('Assert solution_now is close to the current time', () => {
+      const lagMs = Date.now() - solutionNow / 1000;
+      expect(lagMs).toBeGreaterThan(-SOLUTION_TIME_MAX_AHEAD_MS);
+      expect(lagMs).toBeLessThan(SOLUTION_TIME_MAX_LAG_MS);
+    });
+  }
+
+  async fetchSolutionNow(): Promise<number> {
+    const response = await this.getSolutionTime();
+    await this.assertOk(response);
+    const body = await this.parseSolutionTime(response);
+    return body.solution_now;
   }
 }

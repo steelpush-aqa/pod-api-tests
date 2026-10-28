@@ -5,6 +5,7 @@ import { HTTP } from '../../src/constants/httpStatus';
 type MarketsFixtures = {
   marketsApi: MarketsApi;
   markets: Record<string, unknown>[];
+  solutionTime: number;
 };
 
 export const test = base.extend<MarketsFixtures>({
@@ -16,6 +17,13 @@ export const test = base.extend<MarketsFixtures>({
     const response = await marketsApi.getMarkets();
     await marketsApi.assertStatus(response, HTTP.OK);
     await use(await marketsApi.parseMarkets(response));
+  },
+
+  solutionTime: async ({ marketsApi }, use) => {
+    const response = await marketsApi.getSolutionTime();
+    await marketsApi.assertStatus(response, HTTP.OK);
+    const body = await marketsApi.parseSolutionTime(response);
+    await use(body.solution_now);
   },
 });
 
