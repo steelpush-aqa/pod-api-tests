@@ -40,6 +40,8 @@ Config fails fast if ENV_TYPE, the env file, or BASE_URL is missing.
   Remove only when Allure ships a fixed version itself.
 - Every async call is awaited. Assertions must be able to fail (verify by breaking them once).
 - No abstractions ahead of need: extract an API class or fixture only when code repeats.
+- Time-based tests (solution time) compare against the local clock: run them on an
+  NTP-synced machine (`timedatectl` → "System clock synchronized: yes").
 
 ## Working with me
 
