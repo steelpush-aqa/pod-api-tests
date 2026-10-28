@@ -20,7 +20,10 @@ Status: `open` → not covered yet · `covered` → test exists (link) · `repor
 
 | ID   | Area               | Input / condition | Observed behavior                                                                                                           | Source       | Status |
 | ---- | ------------------ | ----------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------ | ------ |
-| P-01 | `GET clob/markets` | no parameters     | 200, JSON array, non-empty, `Cache-Control: public, max-age=60` (12 markets on Oct 25: count is live data, don't assert it) | curl, Oct 25 | open   |
+| P-01 | `GET clob/markets` | no parameters | 200, JSON array, non-empty, `Cache-Control: public, max-age=60` (12 markets on Oct 25: count is live data, don't assert it) | curl, Oct 25 | covered: `markets/successfulRequest.spec.ts` |
+| P-02 | `GET clob/markets` | every market | `id` Bytes32, token addresses Address, `tick_precision`/`lot_size` DecimalUint256 | spec | covered: `markets/fieldFormats.spec.ts` |
+| P-03 | `GET clob/markets` | every market | `status` and `market_type` within spec enums | spec | covered: `markets/enumValues.spec.ts` |
+| P-04 | `GET clob/markets` | every market | `name` = `base_token_symbol/quote_token_symbol` (spec description, our reading) | spec | covered: `markets/nameFormat.spec.ts` |
 
 ## Findings: server vs spec vs docs
 

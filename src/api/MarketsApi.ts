@@ -2,6 +2,7 @@ import { expect, type APIResponse } from '@playwright/test';
 import { BaseApi } from './BaseApi';
 
 export type Market = {
+  id: string;
   name: string;
   base_token_symbol: string;
   quote_token_symbol: string;
@@ -27,6 +28,14 @@ export class MarketsApi extends BaseApi {
       expect(typeof market.base_token_symbol).toBe('string');
       expect(typeof market.quote_token_symbol).toBe('string');
       expect.soft(market.name).toBe(`${market.base_token_symbol}/${market.quote_token_symbol}`);
+    });
+  }
+
+  async assertMarketIdsUnique(markets: Market[]): Promise<void> {
+    await this.step('Assert market ids are unique', () => {
+      const ids = markets.map((market) => market.id);
+      const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
+      expect(duplicates).toEqual([]);
     });
   }
 }
