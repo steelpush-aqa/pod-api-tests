@@ -16,28 +16,23 @@ Status: `open` → not covered yet · `covered` → test exists (link) · `repor
 | T-03 | `{account}` param | validation order: length is checked before hex | `0xZZ` fails on length, never reaches the hex check         | curl, Oct 26 | open   |
 | T-04 | errors in general | any 4xx/5xx                                    | body is plain text, not JSON; `response.json()` would throw | spec + curl  | open   |
 
-
 ## Findings: server vs spec vs docs
 
-| ID   | Where         | Spec says                         | Docs page says                | Server does   | Status |
-| ---- | ------------- | --------------------------------- | ----------------------------- | ------------- | ------ |
-| F-01 | `getActivity` | 422 `text/plain` when `from > to` | lists only 400, 404, 503, 500 | not tried yet | open   |
-| F-02 | unknown routes | "All routes allow any origin (CORS)" | (same) | 404 without `access-control-allow-origin` | low: affects only browser clients (e.g. explorer-style front ends), where a typo surfaces as a CORS error instead of 404; backend consumers unaffected | open |
-
-
-
-
+| ID   | Where          | Spec says                            | Docs page says                | Server does                               | Status                                                                                                                                                 |
+| ---- | -------------- | ------------------------------------ | ----------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| F-01 | `getActivity`  | 422 `text/plain` when `from > to`    | lists only 400, 404, 503, 500 | not tried yet                             | open                                                                                                                                                   |
+| F-02 | unknown routes | "All routes allow any origin (CORS)" | (same)                        | 404 without `access-control-allow-origin` | low: affects only browser clients (e.g. explorer-style front ends), where a typo surfaces as a CORS error instead of 404; backend consumers unaffected | open |
 
 ## How to read a response in tests
 
 A response has three parts. Each is read with its own method and has its own types.
 
-| Part        | Example                                   | Read with            | Type                                 |
-| ----------- | ----------------------------------------- | -------------------- | ------------------------------------ |
-| Status line | `HTTP/2 200`                              | `response.status()`  | number (`200`, not `"200"`)          |
-| Headers     | `content-type: application/json`          | `response.headers()` | object of strings; names lowercase   |
-| Body        | `[{ "maker_fee": "0.000150", ... }]`      | `response.json()`    | parsed JSON: field types vary        |
-|             | `Invalid URL: Cannot parse ...` (errors)  | `response.text()`    | string (errors are plain text)       |
+| Part        | Example                                  | Read with            | Type                               |
+| ----------- | ---------------------------------------- | -------------------- | ---------------------------------- |
+| Status line | `HTTP/2 200`                             | `response.status()`  | number (`200`, not `"200"`)        |
+| Headers     | `content-type: application/json`         | `response.headers()` | object of strings; names lowercase |
+| Body        | `[{ "maker_fee": "0.000150", ... }]`     | `response.json()`    | parsed JSON: field types vary      |
+|             | `Invalid URL: Cannot parse ...` (errors) | `response.text()`    | string (errors are plain text)     |
 
 Rules:
 
@@ -50,7 +45,6 @@ Rules:
   - values that can exceed JavaScript's safe integer range → compare as strings,
     because `JSON.parse` rounds them silently
 - Matchers: `toBe` for numbers and strings, `toEqual` for arrays and objects.
-
 
 ## Big numbers
 
@@ -78,9 +72,11 @@ JavaScript numbers are exact only up to 2^53 − 1 (9007199254740991). Pod amoun
 ```ts
 const text = await response.text();
 
-const body = JSON.parse(text, (key, value, context) =>
-  typeof value === 'number' && !Number.isSafeInteger(value)
-    ? BigInt(context.source)   // the digits exactly as they were in the JSON text
-    : value,                   // normal-sized numbers stay normal numbers
+const body = JSON.parse(
+  text,
+  (key, value, context) =>
+    typeof value === 'number' && !Number.isSafeInteger(value)
+      ? BigInt(context.source) // the digits exactly as they were in the JSON text
+      : value, // normal-sized numbers stay normal numbers
 );
 ```

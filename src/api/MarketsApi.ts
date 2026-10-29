@@ -1,5 +1,6 @@
 import { expect, type APIResponse } from '@playwright/test';
 import { BaseApi } from './BaseApi';
+import { ROUTES } from '../constants/routes';
 import { SOLUTION_TIME_MAX_LAG_MS, SOLUTION_TIME_MAX_AHEAD_MS } from '../constants/thresholds';
 
 export type Market = {
@@ -15,11 +16,11 @@ export type SolutionTime = {
 
 export class MarketsApi extends BaseApi {
   async getMarkets(): Promise<APIResponse> {
-    return this.step('GET clob/markets', () => this.request.get('clob/markets'));
+    return this.step(`GET ${ROUTES.MARKETS}`, () => this.request.get(ROUTES.MARKETS));
   }
 
   async getSolutionTime(): Promise<APIResponse> {
-    return this.step('GET clob/status', () => this.request.get('clob/status'));
+    return this.step(`GET ${ROUTES.SOLUTION_TIME}`, () => this.request.get(ROUTES.SOLUTION_TIME));
   }
 
   async parseMarkets(response: APIResponse): Promise<Record<string, unknown>[]> {

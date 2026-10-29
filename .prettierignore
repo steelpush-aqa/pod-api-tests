@@ -3,4 +3,4 @@ playwright-report/
 test-results/
 package-lock.json
 spec/
-docs/
+docs/.schemathesis/
