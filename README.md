@@ -1,14 +1,14 @@
 # Pod API Tests
 
-This is my API testing project for the [Pod Network](https://pod.network) testnet REST API. I built it with Playwright Test and TypeScript to explore how the API behaves and turn what I learn into automated checks.
+API testing project for the [Pod Network](https://pod.network) testnet REST API. Built with Playwright Test and TypeScript to explore how the API behaves and turn what I learn into automated checks.
 
-I started with the markets and solution-time endpoints. I wanted to check more than whether an endpoint returns a successful status code. A response can look valid while something behind it is no longer working as expected.
+I wanted to check more than whether an endpoint returns a successful status code. A response can look valid while something behind it is no longer working as expected.
 
 One example is `/clob/status`, which returns `solution_now`, a timestamp in microseconds. Checking that it is an integer is not enough. I also check whether it is close to the current time and whether it keeps moving forward. That can help catch an indexer that has stopped making progress even though the endpoint still responds.
 
-The project is a work in progress. As I explore the API, I keep notes about edge cases and differences between the API documentation, the OpenAPI specification, and the responses I actually receive.
+The project is a work in progress. Notes about edge cases are kept and differences between the API documentation, the OpenAPI specification, and the responses I actually receive.
 
-## What I am testing
+## What is being tested
 
 | Area | Current checks |
 | --- | --- |
@@ -32,11 +32,11 @@ The response can contain the right field with the right type, but that does not 
 
 These checks compare the API timestamp with the test machine's clock, so that clock needs to be synchronized.
 
-## How I have organised the tests
+## How the tests are organised
 
 I keep API operations separate from the test cases. The API client classes live in `src/api/`, and Playwright fixtures in `tests/_fixtures/` make shared API objects and prepared data available to tests. Routes, status codes, headers, patterns, enums, and thresholds are kept in `src/constants/`.
 
-I also keep the vendor OpenAPI contract in `spec/pod-rest.yaml` and record exploratory findings in [docs/test-notes.md](docs/test-notes.md). I want those observations to stay visible instead of quietly changing the contract to match what the server happens to return.
+Vendor OpenAPI contract in `spec/pod-rest.yaml` and record exploratory findings in [docs/test-notes.md](docs/test-notes.md). I want those observations to stay visible instead of quietly changing the contract to match what the server happens to return.
 
 A few details matter when testing this API:
 
@@ -135,7 +135,7 @@ Allure is included as a dependency, but I have not added dedicated `allure:gener
 └── README.md
 ```
 
-## What I want to add next
+## What next
 
 - [x] Playwright API test setup and environment loading
 - [x] Typed API client and reusable market fixtures
