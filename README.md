@@ -1,122 +1,57 @@
-# Pod API Tests
+# POD API Testing
 
-API testing project for the [Pod Network](https://pod.network) testnet REST API. Built with Playwright Test and TypeScript to explore how the API behaves and turn what I learn into automated checks.
+**Playwright Test · TypeScript · API Testing · OpenAPI · Custom Assertions**
 
-I wanted to check more than whether an endpoint returns a successful status code. A response can look valid while something behind it is no longer working as expected.
-
-One example is `/clob/status`, which returns `solution_now`, a timestamp in microseconds. Checking that it is an integer is not enough. I also check whether it is close to the current time and whether it keeps moving forward. That can help catch an indexer that has stopped making progress even though the endpoint still responds.
-
-The project is a work in progress. Notes about edge cases are kept and differences between the API documentation, the OpenAPI specification, and the responses I actually receive.
+Automated API testing of the POD Network testnet REST API. This project uses Playwright Test and TypeScript to validate documented API behaviour, check data invariants, and investigate cases where a successful HTTP response does not necessarily mean the service is behaving correctly.
 
 ## What is being tested
 
-| Area | Current checks |
-| --- | --- |
-| Markets endpoint | Successful status, JSON content type, cache-control header, array response, and non-empty results |
-| Market data | Unique market IDs, allowed status and type values, ID and address formats, numeric strings, and consistency between market names and symbols |
-| Solution time | Response status, integer timestamp, cache-control header, freshness compared with the local clock, and timestamp advancement over time |
-| HTTP methods | `HEAD` returns the expected headers without a response body; unsupported methods return `405` and an `Allow` header |
-| CORS | `OPTIONS` response includes the expected origin and allowed methods |
-| Exploratory notes | Boundary cases, plain-text error responses, large numeric values, and differences between documentation and the OpenAPI contract |
+| Area | Current coverage |
+|---|---|
+| Markets | Successful responses, JSON content type, cache-control headers, non-empty results, unique market IDs, allowed status/type values, ID and address formats, numeric strings, and market-name/symbol consistency |
+| Solution time | Timestamp type, freshness against the local clock, and progression across repeated requests |
+| HTTP methods | `HEAD` response headers and empty body; unsupported methods returning `405` with an `Allow` header |
+| CORS | `OPTIONS` response origin and allowed-method headers |
+| Exploratory testing | Boundary cases, plain-text error responses, large numeric values, and differences between documentation, the OpenAPI contract, and observed responses |
 
-The automated tests currently cover markets, solution time, and some common HTTP behavior. Account, explorer, and bridge endpoints are not covered yet.
+Automated coverage currently focuses on markets, solution time, and selected HTTP behaviours. Account, explorer, and bridge endpoints are not yet covered.
 
-## A check I found worth adding
+## Beyond status codes and schema validation
 
-The `solution_now` check is a good example of why I do not want to rely only on status codes or schema validation.
+One example is the `/clob/status` endpoint, which returns `solution_now`, a timestamp in microseconds.
 
-The response can contain the right field with the right type, but that does not tell me whether the indexer is keeping up. I check two things:
+A schema check can confirm that the field exists and is an integer. It cannot establish that the indexer is keeping up. This project adds two behavioural checks:
 
-1. **Freshness:** the timestamp is close to the current time, within a configured tolerance.
-2. **Progress:** when I poll the endpoint, the timestamp advances within a bounded timeout.
+- **Freshness:** the timestamp is close to the test machine's current time, within a configured tolerance.
+- **Progress:** the timestamp advances across repeated polling within a bounded timeout.
 
-These checks compare the API timestamp with the test machine's clock, so that clock needs to be synchronized.
+Together, these checks can help detect an indexer that has stopped making progress even while its endpoint continues to respond. Because the checks compare the API timestamp with the local clock, the test machine's clock must be synchronized.
 
-## How the tests are organised
+## Test design and investigation
 
-I keep API operations separate from the test cases. The API client classes live in `src/api/`, and Playwright fixtures in `tests/_fixtures/` make shared API objects and prepared data available to tests. Routes, status codes, headers, patterns, enums, and thresholds are kept in `src/constants/`.
+The vendor-provided OpenAPI 3.0 specification in `spec/pod-rest.yaml` is used as a contract reference for expected endpoints, parameters, and response behaviour. Exploratory notes record observations and discrepancies between the API documentation, the OpenAPI specification, and actual responses. The contract is not silently changed to match observed behaviour.
 
-Vendor OpenAPI contract in `spec/pod-rest.yaml` and record exploratory findings in [docs/test-notes.md](docs/test-notes.md). I want those observations to stay visible instead of quietly changing the contract to match what the server happens to return.
+Testing also accounts for API-specific details:
 
-A few details matter when testing this API:
+- Error responses may be plain text, so tests do not assume every response body is JSON.
+- Blockchain-related numbers may exceed JavaScript's safe integer range.
+- Decimal amounts may be represented as strings; converting them to JavaScript numbers can lose precision.
+- Testnet data changes, so checks focus on useful invariants rather than fixed records or values.
 
-- Error responses can be plain text, so I should not assume every response body is JSON.
-- Some blockchain-related numbers can exceed JavaScript's safe integer range.
-- Decimal amounts may be returned as strings, so converting them to JavaScript numbers can lose precision.
-- The testnet data changes, so I check useful invariants instead of expecting a fixed list of markets or fixed live values.
+See [docs/test-notes.md](docs/test-notes.md) for exploratory observations, edge cases, and coverage gaps. These notes distinguish observations and hypotheses from confirmed defects.
 
-## Tech stack
+## Automation structure
 
-- **Language:** TypeScript
-- **Test runner and API requests:** Playwright Test and `APIRequestContext`
-- **API contract reference:** OpenAPI 3.0 YAML
-- **Code checks:** ESLint, Prettier, and TypeScript
-- **Pre-commit checks:** Husky
-- **Test diagnostics:** Playwright HTML report and traces on failure
-- **Additional reporting dependency:** Allure
-
-## Getting started
-
-### Requirements
-
-- Node.js 20 or later
-- npm
-- Network access to the Pod testnet API
-
-The tests use Playwright's HTTP API client, so browser binaries are not required.
-
-### Install
-
-```bash
-git clone https://github.com/steelpush-aqa/pod-api-tests.git
-cd pod-api-tests
-npm ci
-```
-
-The testnet environment is configured in `env/.env.testnet`, including the base URL.
-
-### Run the tests
-
-```bash
-npm run test:testnet
-```
-
-To open Playwright's interactive test runner:
-
-```bash
-npm run test:testnet-ui
-```
-
-### Run the code checks
-
-```bash
-npm run typecheck
-npm run lint
-npm run format:check
-```
-
-These checks also run in the local Husky pre-commit hook. There is no remote CI workflow configured yet.
-
-### View the report
-
-The Playwright configuration uses the HTML reporter and keeps traces when tests fail. After a test run, open the report with:
-
-```bash
-npx playwright show-report
-```
-
-Allure is included as a dependency, but I have not added dedicated `allure:generate` or `allure:open` scripts yet.
-
-## Project structure
+API operations are separated from test cases. Reusable API clients and Playwright fixtures provide shared request functionality and prepared test data. Routes, status codes, headers, patterns, enums, and thresholds are maintained in dedicated constants.
 
 ```text
 .
 ├── docs/
 │   └── test-notes.md           # Exploratory findings and coverage gaps
 ├── env/
-│   └── .env.testnet            # Testnet base URL
+│   └── .env.testnet            # Testnet configuration
 ├── spec/
-│   └── pod-rest.yaml           # Vendor OpenAPI contract
+│   └── pod-rest.yaml           # Vendor OpenAPI 3.0 contract
 ├── src/
 │   ├── api/
 │   │   ├── BaseApi.ts          # Shared HTTP operations and assertions
@@ -130,26 +65,69 @@ Allure is included as a dependency, but I have not added dedicated `allure:gener
 │   └── markets/
 │       ├── markets/            # Market response and invariant checks
 │       └── solutionTime/       # Freshness and progress checks
-├── playwright.config.ts
-├── package.json
-└── README.md
+└── playwright.config.ts
 ```
 
-## What next
+## Tech stack
+
+- **Language:** TypeScript
+- **Test runner and HTTP client:** Playwright Test and `APIRequestContext`
+- **API contract:** OpenAPI 3.0 (YAML)
+- **Code quality:** ESLint, Prettier, TypeScript
+- **Git hooks:** Husky pre-commit checks
+- **Diagnostics:** Playwright HTML report and traces on failure
+- **Additional reporting:** Allure dependency included; dedicated report-generation scripts are not yet configured
+
+## Run locally
+
+### Requirements
+
+- Node.js 20 or later
+- npm
+- Network access to the POD testnet API
+
+Browser binaries are not required because the tests use Playwright's HTTP API client.
+
+### Install
+
+```bash
+git clone https://github.com/steelpush-aqa/pod-api-tests.git
+cd pod-api-tests
+npm ci
+```
+
+### Run tests and checks
+
+```bash
+npm run test:testnet
+npm run typecheck
+npm run lint
+npm run format:check
+```
+
+To open the Playwright HTML report:
+
+```bash
+npx playwright show-report
+```
+
+There is currently no remote CI workflow configured.
+
+## Current scope and next steps
 
 - [x] Playwright API test setup and environment loading
-- [x] Typed API client and reusable market fixtures
+- [x] Typed API clients and reusable fixtures
 - [x] Market response and data-invariant checks
 - [x] Solution-time freshness and progress checks
 - [x] HTTP method and CORS checks
 - [x] Type-checking, linting, formatting, and pre-commit checks
-- [ ] Add tests for account, explorer, and bridge endpoints
-- [ ] Add more negative and boundary tests for invalid parameters and error responses
+- [ ] Add coverage for account, explorer, and bridge endpoints
+- [ ] Expand negative and boundary testing for invalid parameters and error responses
 - [ ] Add automated validation against the OpenAPI contract
-- [ ] Try spec-driven and property-based API exploration with Schemathesis
-- [ ] Set up remote CI and publish test results
+- [ ] Explore spec-driven and property-based API testing with Schemathesis
+- [ ] Configure remote CI and publish test results
 
-The tests run against a live testnet, so availability and data can change. When a test fails, I need to look at the response and trace as well as the current service state. The notes in [docs/test-notes.md](docs/test-notes.md) include observations and hypotheses, not confirmed bugs unless I have verified them.
+The tests target a live testnet, so availability and data can change. When a test fails, inspect the response, trace, and current service state before treating it as a confirmed defect.
 
 ---
 
