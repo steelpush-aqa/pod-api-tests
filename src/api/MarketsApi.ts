@@ -2,16 +2,13 @@ import { expect, type APIResponse } from '@playwright/test';
 import { BaseApi } from './BaseApi';
 import { ROUTES } from '../constants/routes';
 import { SOLUTION_TIME_MAX_LAG_MS, SOLUTION_TIME_MAX_AHEAD_MS } from '../constants/thresholds';
+import { SolutionTimeSchema, type SolutionTime } from '../schemas/solutionTime.schema';
 
 export type Market = {
   id: string;
   name: string;
   base_token_symbol: string;
   quote_token_symbol: string;
-};
-
-export type SolutionTime = {
-  solution_now: number;
 };
 
 export class MarketsApi extends BaseApi {
@@ -48,14 +45,9 @@ export class MarketsApi extends BaseApi {
   }
 
   async parseSolutionTime(response: APIResponse): Promise<SolutionTime> {
-    return this.step(
-      'Parse solution time',
-      async () => (await this.parseJson(response)) as SolutionTime,
+    return this.step('Validate solution time against schema', async () =>
+      SolutionTimeSchema.parse(await this.parseJson(response)),
     );
-  }
-
-  async assertSolutionNowIsInteger(body: SolutionTime): Promise<void> {
-    await this.assertIsInteger(body.solution_now, 'solution_now');
   }
 
   async assertSolutionTimeIsRecent(solutionNow: number): Promise<void> {

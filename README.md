@@ -6,13 +6,13 @@ Automated API testing of the POD Network testnet REST API. This project uses Pla
 
 ## What is being tested
 
-| Area | Current coverage |
-|---|---|
-| Markets | Successful responses, JSON content type, cache-control headers, non-empty results, unique market IDs, allowed status/type values, ID and address formats, numeric strings, and market-name/symbol consistency |
-| Solution time | Timestamp type, freshness against the local clock, and progression across repeated requests |
-| HTTP methods | `HEAD` response headers and empty body; unsupported methods returning `405` with an `Allow` header |
-| CORS | `OPTIONS` response origin and allowed-method headers |
-| Exploratory testing | Boundary cases, plain-text error responses, large numeric values, and differences between documentation, the OpenAPI contract, and observed responses |
+| Area                | Current coverage                                                                                                                                                                                              |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Markets             | Successful responses, JSON content type, cache-control headers, non-empty results, unique market IDs, allowed status/type values, ID and address formats, numeric strings, and market-name/symbol consistency |
+| Solution time       | Timestamp type, freshness against the local clock, and progression across repeated requests                                                                                                                   |
+| HTTP methods        | `HEAD` response headers and empty body; unsupported methods returning `405` with an `Allow` header                                                                                                            |
+| CORS                | `OPTIONS` response origin and allowed-method headers                                                                                                                                                          |
+| Exploratory testing | Boundary cases, plain-text error responses, large numeric values, and differences between documentation, the OpenAPI contract, and observed responses                                                         |
 
 Automated coverage currently focuses on markets, solution time, and selected HTTP behaviours. Account, explorer, and bridge endpoints are not yet covered.
 
