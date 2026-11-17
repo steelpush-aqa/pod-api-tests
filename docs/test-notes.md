@@ -5,7 +5,7 @@
 Observations from exploring the Pod testnet REST API. Each entry is either a test idea
 (behavior to cover) or a finding (a disagreement between server, spec and docs).
 
-Status: `open` → not covered yet · `covered` → test exists (link) · `reported` → finding filed
+Status: `open` → nnot implemented or not verified yet · `covered` → an automated test exists, with a link to it · `reported` → a finding has been filed
 
 ## Test ideas: boundaries and negative scenarios
 

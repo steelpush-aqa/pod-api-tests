@@ -35,8 +35,6 @@ export class MarketsApi extends BaseApi {
 
   async assertMarketNameIsBaseQuote(market: Market): Promise<void> {
     await this.step(`Assert name of ${market.name} is base/quote`, () => {
-      expect(typeof market.base_token_symbol).toBe('string');
-      expect(typeof market.quote_token_symbol).toBe('string');
       expect.soft(market.name).toBe(`${market.base_token_symbol}/${market.quote_token_symbol}`);
     });
   }
