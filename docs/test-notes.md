@@ -19,10 +19,16 @@ Status: `open` → nnot implemented or not verified yet · `covered` → an auto
 
 ## Findings: server vs spec vs docs
 
-| ID   | Where          | Spec says                            | Docs page says                | Server does                               | Status                                                                                                                                                 |
-| ---- | -------------- | ------------------------------------ | ----------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| F-01 | `getActivity`  | 422 `text/plain` when `from > to`    | lists only 400, 404, 503, 500 | not tried yet                             | open                                                                                                                                                   |
-| F-02 | unknown routes | "All routes allow any origin (CORS)" | (same)                        | 404 without `access-control-allow-origin` | low: affects only browser clients (e.g. explorer-style front ends), where a typo surfaces as a CORS error instead of 404; backend consumers unaffected | open |
+| ID   | Where            | Spec says                                    | Docs page says                          | Server does                                              | Severity                                                                           | Status |
+| ---- | ---------------- | -------------------------------------------- | --------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------ |
+| F-01 | `getActivity`    | 422 `text/plain` when `from > to`            | lists only 400, 404, 503, 500           | not tried yet                                            | to verify                                                                          | open   |
+| F-02 | `getMarkets`     | `MarketStatic` declares no `required` fields | —                                       | always sends the core fields                             | spec gap: a market with no `id` is valid by contract                               | open   |
+| F-03 | unknown routes   | "All routes allow any origin (CORS)"         | (same)                                  | 404 without `access-control-allow-origin`                | low: browser clients see a CORS error instead of 404; backend consumers unaffected | open   |
+| F-04 | GET-only routes  | "All routes are GET"                         | —                                       | OPTIONS answers 200, but `allow: GET,HEAD` omits OPTIONS | low: likely the Caddy proxy answering CORS before the API                          | open   |
+| F-05 | GET-only routes  | HEAD not mentioned                           | —                                       | HEAD supported, GET headers without body                 | info: undocumented, behaves correctly                                              | open   |
+| F-06 | spec `servers`   | `https://rpc.podtestnet.dev/v1`              | `https://staging-rpc.podtestnet.dev/v1` | old host doesn't respond; new host works                 | spec outdated                                                                      | open   |
+| F-07 | `getMarketStats` | "Statistics for every market"                | —                                       | disabled markets omitted (e.g. `0x…3a` TEST/USD)         | low: docs imprecise                                                                | open   |
+| F-08 | `getMarkets`     | `MarketStatic` has no `owner` field          | —                                       | every market includes `owner` (an address)               | low: undocumented field                                                            | open   |
 
 ## How to read a response in tests
 
