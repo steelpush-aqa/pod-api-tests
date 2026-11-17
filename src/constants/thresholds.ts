@@ -6,3 +6,7 @@ export const SOLUTION_TIME_MAX_LAG_MS = 10_000;
 
 /** solution_now may lead the current time by at most this much (clock differences) */
 export const SOLUTION_TIME_MAX_AHEAD_MS = 2_000;
+
+/** How many solution_now samples to take, and how far apart */
+export const SOLUTION_TIME_SAMPLES = 20;
+export const SOLUTION_TIME_SAMPLE_INTERVAL_MS = 250;

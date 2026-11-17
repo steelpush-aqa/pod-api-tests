@@ -15,8 +15,12 @@ export class BaseApi {
     });
   }
 
-  async sendWithMethod(route: string, method: string): Promise<APIResponse> {
-    return this.step(`${method} ${route}`, () => this.request.fetch(route, { method }));
+  async sendWithMethod(
+    route: string,
+    method: string,
+    headers?: Record<string, string>,
+  ): Promise<APIResponse> {
+    return this.step(`${method} ${route}`, () => this.request.fetch(route, { method, headers }));
   }
 
   async assertMethodNotAllowed(response: APIResponse): Promise<void> {
