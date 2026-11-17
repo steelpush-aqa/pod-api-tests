@@ -56,18 +56,27 @@ Observations from comparing the documentation, the OpenAPI spec and the live API
 
 ## Hand-written tests and Schemathesis
 
-I ran Schemathesis against the same endpoints to see what each approach catches.
+I ran [Schemathesis](https://schemathesis.io) against the same endpoints, with no test code of my own: it reads the OpenAPI spec and generates the requests and checks by itself.
 
-|                                                                        | Schemathesis                        | My Playwright tests |
-| ---------------------------------------------------------------------- | ----------------------------------- | ------------------- |
-| Status codes, schema conformance                                       | ✓                                   | ✓                   |
-| Unsupported methods, `Allow` header                                    | ✓                                   | ✓                   |
-| Unexpected request variants (odd headers, method tokens)               | ✓, without me thinking of them      | Only what I wrote   |
-| Rules only described in prose (cache headers, name format)             | ✗                                   | ✓                   |
-| Rules not in the spec at all (unique IDs, freshness, never decreasing) | ✗ (would need custom Python checks) | ✓                   |
-| A market missing its ID                                                | ✗ the spec allows it                | ✓                   |
+What it gave me that I wouldn't have written myself:
 
-My summary so far: **Schemathesis checks the contract; my tests check what the contract forgot to say.** The endpoints covered so far take no parameters, which is the weakest case for generated tests, so the comparison will be more interesting on parameterized endpoints.
+- **Requests I hadn't thought of.** It's where the `OPTIONS` / `Allow` inconsistency in the findings came from. I later turned the unsupported-method checks into Playwright tests.
+- **A long list of checks out of the box**: status codes, response schema, content type, the `Allow` header on `405` responses, unsupported methods and more, all derived from the spec in one command.
+- **Reports that show every request.** The HAR report let me read each request and response, and the HTML report summarizes the run and the checks applied.
+- **Low noise by design.** It deliberately avoids reporting problems that come from proxies in front of the API.
+
+Where my hand-written tests add something, the reason is mostly the spec, not the tool:
+
+|                                                                 | Schemathesis                         | My Playwright tests |
+| --------------------------------------------------------------- | ------------------------------------ | ------------------- |
+| Status codes, schema conformance                                | ✓                                    | ✓                   |
+| Unsupported methods, `Allow` header                             | ✓                                    | ✓                   |
+| Request variants I didn't think of                              | ✓                                    | only what I wrote   |
+| Rules described only in prose (cache headers, name format)      | not in the schema, so not checked    | ✓                   |
+| Rules not in the spec (unique IDs, freshness, never decreasing) | possible with custom checks (Python) | ✓                   |
+| A market missing its ID                                         | the spec allows it                   | ✓                   |
+
+Schemathesis can only be as strict as the contract it reads, and this spec leaves a lot unsaid. That's useful in itself: everything it accepted that I consider wrong pointed me at a gap in the spec.
 
 ## Decisions and trade-offs
 
@@ -126,7 +135,7 @@ The tests run against a live testnet. When one fails, I check the response, the 
 
 ## Working with an AI assistant
 
-I use Claude mostly for brainstorming: test ideas, reviewing my design decisions, and explaining concepts while I learn. I write and run the tests myself. [`CLAUDE.md`](CLAUDE.md) holds the project rules it follows, and [`.claude/settings.json`](.claude/settings.json) enforces guardrails: it can't push, can't edit the vendor spec, and every file it edits is formatted automatically.
+I use Claude mostly for brainstorming: test ideas, reviewing my design decisions, and explaining concepts. [`CLAUDE.md`](CLAUDE.md) holds the project rules it follows, and [`.claude/settings.json`](.claude/settings.json) enforces guardrails: it can't push, can't edit the vendor spec, and every file it edits is formatted automatically.
 
 ## Next
 

@@ -29,7 +29,11 @@ export default defineConfig(
       'playwright/expect-expect': [
         'error',
         {
-          assertFunctionNames: ['assertSuccessResponseCode', 'expectNeverDecreases'],
+          assertFunctionNames: [
+            'assertSuccessResponseCode',
+            'expectNeverDecreases',
+            'assertVaryIncludes',
+          ],
           assertFunctionPatterns: ['^assert'],
         },
       ],

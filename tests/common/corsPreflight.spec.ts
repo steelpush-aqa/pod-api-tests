@@ -1,18 +1,12 @@
-import { test } from '@playwright/test';
-import { BaseApi } from '../../src/api/BaseApi';
+import { test } from '../_fixtures/fixtures';
 import { ROUTES } from '../../src/constants/routes';
-
-const PREFLIGHT_HEADERS = {
-  Origin: 'https://example.com',
-  'Access-Control-Request-Method': 'GET',
-};
+import { PREFLIGHT_HEADERS } from '../../src/constants/requestHeaders';
 
 for (const route of Object.values(ROUTES)) {
-  test(`CORS preflight from another website: ${route} allows GET`, async ({ request }) => {
-    const api = new BaseApi(request);
-    const response = await api.sendWithMethod(route, 'OPTIONS', PREFLIGHT_HEADERS);
+  test(`CORS preflight from another website: ${route} allows GET`, async ({ baseApi }) => {
+    const response = await baseApi.sendWithMethod(route, 'OPTIONS', PREFLIGHT_HEADERS);
 
-    await api.assertOk(response);
-    await api.assertCorsAllowsGetFromAnyOrigin(response);
+    await baseApi.assertOk(response);
+    await baseApi.assertCorsAllowsGetFromAnyOrigin(response);
   });
 }

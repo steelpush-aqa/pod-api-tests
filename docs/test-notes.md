@@ -9,12 +9,13 @@ Status: `open` → nnot implemented or not verified yet · `covered` → an auto
 
 ## Test ideas: boundaries and negative scenarios
 
-| ID   | Area              | Input / condition                              | Observed behavior                                           | Source       | Status |
-| ---- | ----------------- | ---------------------------------------------- | ----------------------------------------------------------- | ------------ | ------ |
-| T-01 | `{account}` param | `0xZZ` (too short)                             | 400, `text/plain`, "invalid string length"                  | curl, Oct 26 | open   |
-| T-02 | `{account}` param | correct length (40 hex chars), non-hex char    | not tried yet; expected 400 on the hex check                | idea         | open   |
-| T-03 | `{account}` param | validation order: length is checked before hex | `0xZZ` fails on length, never reaches the hex check         | curl, Oct 26 | open   |
-| T-04 | errors in general | any 4xx/5xx                                    | body is plain text, not JSON; `response.json()` would throw | spec + curl  | open   |
+| ID   | Area              | Input / condition                              | Observed behavior                                              | Source       | Status |
+| ---- | ----------------- | ---------------------------------------------- | -------------------------------------------------------------- | ------------ | ------ |
+| T-01 | `{account}` param | `0xZZ` (too short)                             | 400, `text/plain`, "invalid string length"                     | curl, Oct 26 | open   |
+| T-02 | `{account}` param | correct length (40 hex chars), non-hex char    | not tried yet; expected 400 on the hex check                   | idea         | open   |
+| T-03 | `{account}` param | validation order: length is checked before hex | `0xZZ` fails on length, never reaches the hex check            | curl, Oct 26 | open   |
+| T-04 | errors in general | any 4xx/5xx                                    | body is plain text, not JSON; `response.json()` would throw    | spec + curl  | open   |
+| T-05 | `GET clob/status` | unknown query parameter `?foo=bar`             | 200, normal body: unknown parameters are ignored (spec silent) | curl, Nov 17 | open   |
 
 ## Findings: server vs spec vs docs
 

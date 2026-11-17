@@ -81,4 +81,16 @@ export class BaseApi {
       expect(response.headers()['access-control-allow-methods']).toBe(CORS.ALLOW_METHODS);
     });
   }
+
+  async assertVaryIncludes(response: APIResponse, header: string): Promise<void> {
+    await this.step(`Assert vary includes ${header}`, () => {
+      expect(response.headers()['vary']?.toLowerCase()).toContain(header.toLowerCase());
+    });
+  }
+
+  async getOverPlainHttp(route: string): Promise<APIResponse> {
+    const url = new URL(route, process.env.BASE_URL);
+    url.protocol = 'http:';
+    return this.step(`GET ${url.href}`, () => this.request.get(url.href, { maxRedirects: 0 }));
+  }
 }
