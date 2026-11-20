@@ -6,3 +6,14 @@ node_modules/
 /playwright/.auth/
 /schemathesis-report/
 /.schemathesis/
+/.vscode/
+/.idea/
+/.mcp.json
+/.playwright-mcp/
+/allure-results/
+/allure-report/
+/coverage/
+*.log
+.DS_Store
+/env/.env.*
+

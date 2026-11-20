@@ -87,3 +87,25 @@ const body = JSON.parse(
       : value, // normal-sized numbers stay normal numbers
 );
 ```
+
+
+
+
+Recommended additions
+Highest value: semantic field invariants. The schema checks types and formats, but several fields are only declared as strings or integers in the spec. Consider checking that maker and taker fees use the documented six-decimal format, and that positive configuration values such as lot_size, tick_precision, and auction_interval_us are greater than zero. Treat these as additional project assumptions, not contract requirements, unless Pod confirms them.
+
+Lifecycle consistency. The spec describes live_at_us, disable_at_us, and settlement_price as lifecycle-related optional fields. Add checks for combinations that are meaningful from those descriptions—for example, a settlement price should not appear before settlement—only after confirming the lifecycle rules with Pod. The current schema verifies their types but not their relationships.
+
+Forward compatibility. The spec does not define whether extra fields are allowed. Add a check or schema test to ensure an undocumented additive field does not cause validation to fail. The live response already includes an undocumented owner field, recorded as finding F-08 in test-notes.md:20-28.
+
+Empty-list behavior. The current success test requires at least one market. The OpenAPI’s array schema does not require a non-empty list, so an empty array is contract-valid. Either keep the assertion explicitly as a live-environment expectation, or separate it from contract conformance to avoid treating a valid empty response as a schema failure.
+
+Negative scenarios and limits
+Keep the existing unsupported-method, HEAD, and CORS coverage; it already exercises the useful negative/method cases for this GET-only endpoint.
+There are no endpoint parameters to make invalid, and the spec lists no endpoint-specific error responses. I would not assert that arbitrary query parameters, a request body, or an unusual Accept header must produce a particular error status.
+A request to an unrelated or suffixed path could be tested as routing behavior, but it would test route handling rather than GET /clob/markets.
+The clearest gap is therefore semantic validation beyond the existing schema, especially for fees and market configuration values.
+
+3:24 PM
+30s
+•

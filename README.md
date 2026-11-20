@@ -2,35 +2,28 @@
 
 **Playwright Test · TypeScript · Zod · Schemathesis · OpenAPI**
 
-An API test framework for the [Pod Network](https://pod.network) testnet REST API, built step by step.
+An API test framework for the [Pod Network](https://pod.network) testnet REST API.
 
-I'm using this project to learn how a test framework should grow: start with a plain request, add structure only when the tests show a need for it, and keep a record of every decision along the way. The API is live and public, so the tests run against real data that changes over time.
+## Engineering approach
 
-## How the framework grew
+The framework is built around **maintainability, clear responsibilities, and verified data**. I aim to apply object-oriented design and SOLID principles where they make the code easier to understand, extend, and maintain.
 
-I didn't design the architecture up front. Each layer was added when the existing code made the need visible.
+Shared API behavior is separated from endpoint-specific logic, reusable test setup is handled through Playwright fixtures, and response data is validated at runtime with Zod rather than trusted through TypeScript type assertions alone.
 
-| Step | What I added                                                 | Why                                                                                                                                                                                                                |
-| ---- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1    | One test, one request, assertions inline                     | To see the real response before deciding what to check                                                                                                                                                             |
-| 2    | `BaseApi` and `MarketsApi` classes                           | The same request, status check and parsing appeared in several tests                                                                                                                                               |
-| 3    | Playwright fixtures                                          | Tests needed prepared data (a validated market list, a fresh timestamp) as a precondition                                                                                                                          |
-| 4    | Constants for routes, status codes, headers, patterns, enums | The same values were repeated across files; one place to change them                                                                                                                                               |
-| 5    | API-wide tests (`tests/common/`)                             | Some rules apply to every endpoint: unsupported methods, `HEAD`, CORS                                                                                                                                              |
-| 6    | [Zod](https://zod.dev) schemas                               | Type casts (`as SolutionTime`) were claims nobody checked. A typo in a field name passed type-checking and only failed at runtime. Schemas check the data and produce the TypeScript type from the same definition |
-| 7    | [Schemathesis](https://schemathesis.io) runs                 | To compare hand-written tests with tests generated from the OpenAPI spec                                                                                                                                           |
+I also use tools that complement hand-written tests: OpenAPI provides the API contract, Schemathesis generates additional checks from that contract, and TypeScript, ESLint, Prettier, and automated reports help keep the codebase consistent and easier to debug.
 
-Patterns I'm deliberately holding back until the code asks for them: a Builder for query parameters (useful once endpoints with several optional parameters are covered), and a `BaseApi` split once more API classes exist.
+**The goal is not to introduce patterns for their own sake, but to build a test framework whose design remains useful as its coverage and complexity increase.**
 
-## What is tested
+## Testing strategy
 
-| Area                           | Checks                                                                                                                                                                                                                                  |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Markets (`/clob/markets`)      | Request succeeds with the documented headers; every market matches a Zod schema (formats, enums, required fields); market names are `base/quote` symbols; market IDs are unique                                                         |
-| Solution time (`/clob/status`) | Request and schema; the timestamp is close to the current time; it advances; it never decreases across repeated calls                                                                                                                   |
-| All routes                     | Unsupported methods (`PUT`, `POST`, `PATCH`, `DELETE`, `TRACE`, `QUERY`) return `405` with an `Allow` header; `HEAD` returns the `GET` headers without a body; `OPTIONS` and a browser-style CORS preflight allow `GET` from any origin |
+The framework combines several complementary approaches to API testing:
 
-Account, explorer and bridge endpoints are not covered yet.
+- **Contract validation:** Check responses against the API's OpenAPI specification and runtime schemas.
+- **Behavioral testing:** Verify expected behavior, including rules and constraints that the published contract does not fully describe.
+- **Protocol and HTTP behavior:** Check method handling, response headers, redirects, and CORS behavior.
+- **Model-based test generation:** Use Schemathesis to explore request variations and identify cases that hand-written tests may miss.
+
+The emphasis is on more than verifying that an endpoint returns a successful status code. Tests should also examine response structure, consistency, and behavior that matters to clients.
 
 ## Beyond the contract
 
@@ -45,14 +38,14 @@ These checks compare against the local clock, so the machine running them must b
 
 Observations from comparing the documentation, the OpenAPI spec and the live API. Details and status are in [docs/test-notes.md](docs/test-notes.md).
 
-| Finding                                                                                                                                | Severity      |
-| -------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| `MarketStatic` declares no `required` fields, so by the contract a market with no ID is valid                                          | Spec gap      |
-| The spec's `servers` URL (`rpc.podtestnet.dev`) no longer responds; the docs now publish `staging-rpc.podtestnet.dev`                  | Outdated spec |
-| `OPTIONS` returns `200`, but the same response's `Allow` header lists only `GET,HEAD` (likely the proxy answering CORS before the API) | Low           |
-| Unknown routes return `404` without the CORS header, so browser clients see a CORS error instead of a 404                              | Low           |
-| `HEAD` is supported but not documented                                                                                                 | Info          |
-| `getActivity` declares a `422` in the spec that the docs page doesn't list                                                             | To verify     |
+| Finding | Severity |
+| --- | --- |
+| `MarketStatic` declares no `required` fields, so by the contract a market with no ID is valid | Spec gap |
+| The spec's `servers` URL (`rpc.podtestnet.dev`) no longer responds; the docs now publish `staging-rpc.podtestnet.dev` | Outdated spec |
+| `OPTIONS` returns `200`, but the same response's `Allow` header lists only `GET,HEAD` (likely the proxy answering CORS before the API) | Low |
+| Unknown routes return `404` without the CORS header, so browser clients see a CORS error instead of a 404 | Low |
+| `HEAD` is supported but not documented | Info |
+| `getActivity` declares a `422` in the spec that the docs page doesn't list | To verify |
 
 ## Hand-written tests and Schemathesis
 
@@ -67,14 +60,14 @@ What it gave me that I wouldn't have written myself:
 
 Where my hand-written tests add something, the reason is mostly the spec, not the tool:
 
-|                                                                 | Schemathesis                         | My Playwright tests |
-| --------------------------------------------------------------- | ------------------------------------ | ------------------- |
-| Status codes, schema conformance                                | ✓                                    | ✓                   |
-| Unsupported methods, `Allow` header                             | ✓                                    | ✓                   |
-| Request variants I didn't think of                              | ✓                                    | only what I wrote   |
-| Rules described only in prose (cache headers, name format)      | not in the schema, so not checked    | ✓                   |
-| Rules not in the spec (unique IDs, freshness, never decreasing) | possible with custom checks (Python) | ✓                   |
-| A market missing its ID                                         | the spec allows it                   | ✓                   |
+| | Schemathesis | My Playwright tests |
+| --- | --- | --- |
+| Status codes, schema conformance | ✓ | ✓ |
+| Unsupported methods, `Allow` header | ✓ | ✓ |
+| Request variants I didn't think of | ✓ | only what I wrote |
+| Rules described only in prose (cache headers, name format) | not in the schema, so not checked | ✓ |
+| Rules not in the spec (unique IDs, freshness, never decreasing) | possible with custom checks (Python) | ✓ |
+| A market missing its ID | the spec allows it | ✓ |
 
 Schemathesis can only be as strict as the contract it reads, and this spec leaves a lot unsaid. That's useful in itself: everything it accepted that I consider wrong pointed me at a gap in the spec.
 
@@ -146,3 +139,5 @@ I use Claude mostly for brainstorming: test ideas, reviewing my design decisions
 - [ ] Account, explorer and bridge coverage
 
 ---
+
+**Author:** [steelpush-aqa](https://github.com/steelpush-aqa)

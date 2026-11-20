@@ -9,3 +9,9 @@ export const ADDRESS = /^0x[a-fA-F0-9]{40}$/;
 
 /** Unsigned 256-bit integer as a decimal string */
 export const DECIMAL_UINT256 = /^[0-9]+$/;
+
+/** Signed integer as a decimal string. Not a named schema in the spec: from "Signed" in the field descriptions */
+export const SIGNED_DECIMAL = /^-?[0-9]+$/;
+
+/** Decimal string with exactly six decimal places. Not a named schema in the spec: from "6 decimal places" in the field descriptions */
+export const DECIMAL_SIX_PLACES = /^-?\d+\.\d{6}$/;
